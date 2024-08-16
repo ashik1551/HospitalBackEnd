@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.response import Response
 from .serializers import UserSerializer,DoctorSerializer,SpecializationSerialiser,BookingSerializer
-from rest_framework.generics import CreateAPIView,RetrieveUpdateDestroyAPIView,RetrieveDestroyAPIView
+from rest_framework.generics import CreateAPIView,UpdateAPIView,RetrieveDestroyAPIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -52,7 +52,7 @@ class DoctorCreateView(APIView):
 
             return Response(serializer.errors,status=status.HTTP_406_NOT_ACCEPTABLE)
 
-class DoctorRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
+class DoctorRetrieveDeleteView(RetrieveDestroyAPIView):
 
     serializer_class=DoctorSerializer
 
@@ -61,6 +61,26 @@ class DoctorRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     permission_classes=[isAdminOrReadOnly]
 
     authentication_classes=[JWTAuthentication]
+
+class DoctorUpdateView(UpdateAPIView):
+
+    def put(self,request,*args,**kwargs):
+
+        specialization=Specialization.objects.get(id=kwargs.get('sp'))
+
+        qs=Doctor.objects.get(id=kwargs.get('pk'))
+
+        serializer=DoctorSerializer(instance=qs,data=request.data)
+
+        if serializer.is_valid():
+
+            serializer.save(specialization=specialization)
+
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        
+        else:
+
+            return Response(serializer.errors,status=status.HTTP_406_NOT_ACCEPTABLE)
 
 class SpecialisationModelViewSet(ModelViewSet):
     
