@@ -17,5 +17,7 @@ urlpatterns=[
     path('doctor/<int:pk>/booking/',views.BookingCreateView.as_view()),
     path('booking/<int:pk>/',views.BookingReatriveDelete.as_view()),
     path('booking/',views.Bookinglist.as_view()),
-    path('isadmin/',views.AdminLogin.as_view())
+    path('booking/admin/',views.BookingViewAdmin.as_view()),
+    path('isadmin/',views.AdminLogin.as_view()),
+    path('doctor/',views.DoctorList.as_view())
 ] + router.urls

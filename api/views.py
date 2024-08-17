@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.response import Response
 from .serializers import UserSerializer,DoctorSerializer,SpecializationSerialiser,BookingSerializer
-from rest_framework.generics import CreateAPIView,UpdateAPIView,RetrieveDestroyAPIView
+from rest_framework.generics import CreateAPIView,UpdateAPIView,RetrieveDestroyAPIView,ListAPIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -51,6 +51,16 @@ class DoctorCreateView(APIView):
         else:
 
             return Response(serializer.errors,status=status.HTTP_406_NOT_ACCEPTABLE)
+        
+class DoctorList(ListAPIView):
+
+    permission_classes=[permissions.IsAuthenticated]
+
+    authentication_classes=[JWTAuthentication]
+
+    queryset=Doctor.objects.all()
+
+    serializer_class=DoctorSerializer
 
 class DoctorRetrieveDeleteView(RetrieveDestroyAPIView):
 
@@ -145,3 +155,32 @@ class BookingReatriveDelete(RetrieveDestroyAPIView):
         instance.is_active=False
 
         instance.save()
+
+class BookingViewAdmin(APIView):
+
+    permission_classes=[permissions.IsAdminUser]
+
+    authentication_classes=[JWTAuthentication]
+
+    def get(self, request, *args, **kwargs):
+
+        qs=Booking.objects.all()
+
+
+        if "date" in request.query_params:
+
+            date=request.query_params.get('date')
+
+            qs=qs.filter(booking_date=date)
+        
+        if "doctor" in request.query_params:
+
+            doctorid=request.query_params.get('doctor')
+
+            doctor=Doctor.objects.get(id=doctorid)
+
+            qs=qs.filter(doctor=doctor)
+        
+        serialiser=BookingSerializer(qs,many=True)
+
+        return Response(serialiser.data,status=status.HTTP_200_OK)
